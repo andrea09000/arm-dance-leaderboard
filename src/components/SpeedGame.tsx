@@ -238,11 +238,6 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
       return;
     }
     setSaving(false);
-    if (error) {
-      toast.error("Errore nel salvataggio");
-      console.error(error);
-      return;
-    }
     toast.success("Punteggio salvato! 🏆");
     onScoreSaved();
     setPhaseSync("ready");
