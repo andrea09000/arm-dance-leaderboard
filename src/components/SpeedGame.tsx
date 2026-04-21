@@ -4,7 +4,8 @@ import { getSixSevenArmState, type ArmState } from "@/lib/sixSevenCounter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db, SCORES_COLLECTION } from "@/integrations/firebase/client";
 import { toast } from "sonner";
 import { Loader2, Camera, Trophy } from "lucide-react";
 
@@ -224,9 +225,18 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
       return;
     }
     setSaving(true);
-    const { error } = await supabase
-      .from("scores")
-      .insert({ player_name: name.slice(0, 20), reps: repsRef.current });
+    try {
+      await addDoc(collection(db, SCORES_COLLECTION), {
+        player_name: name.slice(0, 20),
+        reps: repsRef.current,
+        created_at: serverTimestamp(),
+      });
+    } catch (error) {
+      setSaving(false);
+      toast.error("Errore nel salvataggio");
+      console.error(error);
+      return;
+    }
     setSaving(false);
     if (error) {
       toast.error("Errore nel salvataggio");
