@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+} from "firebase/firestore";
+import { db, SCORES_COLLECTION } from "@/integrations/firebase/client";
 import { Card } from "@/components/ui/card";
 import { Trophy, Medal, Award } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,37 +15,42 @@ interface Score {
   id: string;
   player_name: string;
   reps: number;
-  created_at: string;
 }
 
 interface LeaderboardProps {
   refreshKey: number;
 }
 
-export function Leaderboard({ refreshKey }: LeaderboardProps) {
+export function Leaderboard({ refreshKey: _refreshKey }: LeaderboardProps) {
   const [scores, setScores] = useState<Score[] | null>(null);
 
   useEffect(() => {
-    let active = true;
-    (async () => {
-      const { data, error } = await supabase
-        .from("scores")
-        .select("id, player_name, reps, created_at")
-        .order("reps", { ascending: false })
-        .order("created_at", { ascending: true })
-        .limit(20);
-      if (!active) return;
-      if (error) {
-        console.error(error);
+    const q = query(
+      collection(db, SCORES_COLLECTION),
+      orderBy("reps", "desc"),
+      orderBy("created_at", "asc"),
+      limit(20),
+    );
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const next: Score[] = snap.docs.map((doc) => {
+          const data = doc.data() as { player_name?: string; reps?: number };
+          return {
+            id: doc.id,
+            player_name: data.player_name ?? "—",
+            reps: data.reps ?? 0,
+          };
+        });
+        setScores(next);
+      },
+      (error) => {
+        console.error("Errore classifica Firestore:", error);
         setScores([]);
-        return;
-      }
-      setScores(data ?? []);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [refreshKey]);
+      },
+    );
+    return () => unsub();
+  }, []);
 
   return (
     <Card className="p-6 shadow-card">
@@ -71,16 +83,18 @@ export function Leaderboard({ refreshKey }: LeaderboardProps) {
               rank === 1
                 ? "text-primary"
                 : rank === 2
-                ? "text-accent"
-                : rank === 3
-                ? "text-primary/70"
-                : "text-muted-foreground";
+                  ? "text-accent"
+                  : rank === 3
+                    ? "text-primary/70"
+                    : "text-muted-foreground";
             return (
               <li
                 key={s.id}
                 className="flex items-center gap-3 rounded-lg border bg-secondary/40 px-3 py-2 transition-colors hover:bg-secondary/70"
               >
-                <div className={`flex w-8 items-center justify-center font-mono font-bold ${rankColor}`}>
+                <div
+                  className={`flex w-8 items-center justify-center font-mono font-bold ${rankColor}`}
+                >
                   {Icon ? <Icon className="h-5 w-5" /> : `#${rank}`}
                 </div>
                 <div className="flex-1 truncate font-semibold">{s.player_name}</div>
