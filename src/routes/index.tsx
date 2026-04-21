@@ -8,17 +8,7 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "67 Speed — SixSeven Arm Speed Challenge" },
-      {
-        name: "description",
-        content:
-          "Sfida la tua velocità SixSeven: la webcam conta i cambi di braccia in 30 secondi. Classifica online, gratis, senza app.",
-      },
-      { property: "og:title", content: "67 Speed — SixSeven Challenge" },
-      {
-        property: "og:description",
-        content: "Quanti cambi di braccia in 30 secondi? Sfida la classifica.",
-      },
+      { title: "SixSeven 67 | Leaderboard" },
     ],
   }),
 });
@@ -37,7 +27,7 @@ function Index() {
           <span className="text-gradient-hero">SEVEN</span>
         </h1>
         <p className="mt-3 text-pretty text-base text-muted-foreground sm:text-lg">
-          Alterna le braccia il più velocemente possibile. La webcam fa il resto.
+          Alterna le braccia il più velocemente che puoi. La webcam fa il resto.
         </p>
       </header>
 
@@ -47,7 +37,7 @@ function Index() {
       </div>
 
       <footer className="mx-auto mt-12 max-w-5xl text-center text-xs text-muted-foreground">
-        Tracking pose con MediaPipe · Classifica online
+        Sfida i tuoi amici su sixsevenn.me
       </footer>
     </main>
   );

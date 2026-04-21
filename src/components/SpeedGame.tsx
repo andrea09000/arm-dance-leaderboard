@@ -12,6 +12,8 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 const ROUND_SECONDS = 30;
 type Phase = "idle" | "loading" | "ready" | "countdown" | "playing" | "done";
 
+const PUBLIC_SITE_URL = "https://sixsevenn.me";
+
 interface SpeedGameProps {
   onScoreSaved: (payload: { reps: number; playerName?: string }) => void;
 }
@@ -68,12 +70,12 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
     ctx.textBaseline = "top";
     ctx.font =
       "900 88px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
-    ctx.fillText("67 SPEED", canvas.width / 2, 140);
+    ctx.fillText("SIX·SEVEN", canvas.width / 2, 140);
 
     ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.font =
       "600 40px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
-    ctx.fillText("SixSeven Arm Speed Challenge", canvas.width / 2, 250);
+    ctx.fillText("SixSeven Challenge", canvas.width / 2, 250);
 
     // Score
     ctx.fillStyle = "rgba(255,255,255,0.85)";
@@ -115,7 +117,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
     ctx.fillStyle = "rgba(255,255,255,0.62)";
     ctx.font =
       "600 38px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
-    ctx.fillText(window.location.origin, canvas.width / 2, 1540);
+    ctx.fillText("sixsevenn.me", canvas.width / 2, 1540);
 
     const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) throw new Error("PNG_ENCODING_FAILED");
@@ -126,8 +128,8 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
     setSharing(true);
     try {
       const payload = { reps: repsRef.current, playerName: playerName.trim() || undefined };
-      const url = window.location.href;
-      const text = `Ho fatto ${payload.reps} cambi in 30 secondi su 67 Speed. Prova a battermi!`;
+      const url = PUBLIC_SITE_URL;
+      const text = `Ho fatto ${payload.reps} cambi in 30 secondi su SixSeven. Prova a battermi!`;
 
       const canWebShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
       if (!canWebShare) {
@@ -140,7 +142,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
       let file: File | undefined;
       try {
         const png = await createShareImagePng(payload);
-        file = new File([png], "67-speed.png", { type: "image/png" });
+        file = new File([png], "sixseven.png", { type: "image/png" });
       } catch {
         // If image generation fails, fall back to text/url share.
         file = undefined;
@@ -154,7 +156,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
           await navigator.share({
             files: [file],
             text,
-            title: "67 Speed — Il mio punteggio",
+            title: "SixSeven — Il mio punteggio",
           });
           toast.success("Condivisione pronta: scegli Instagram Stories o TikTok.");
           return;
@@ -162,7 +164,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
       }
 
       await navigator.share({
-        title: "67 Speed — Il mio punteggio",
+        title: "SixSeven — Il mio punteggio",
         text,
         url,
       });
