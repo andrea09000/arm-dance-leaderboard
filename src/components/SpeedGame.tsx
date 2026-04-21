@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getPoseLandmarker, LM } from "@/lib/poseDetector";
+import { getSixSevenArmState, type ArmState } from "@/lib/sixSevenCounter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Loader2, Camera, Trophy } from "lucide-react";
 
 const ROUND_SECONDS = 30;
 type Phase = "idle" | "loading" | "ready" | "countdown" | "playing" | "done";
-type ArmState = "L_UP" | "R_UP" | "NONE";
+
 
 interface SpeedGameProps {
   onScoreSaved: () => void;
@@ -152,13 +153,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
 
         // Detect alternation only while playing
         if (phaseRef.current === "playing") {
-          const threshold = 0.05; // wrist must be clearly above shoulder (lower y = higher)
-          const lUp = lWrist.y < lShoulder.y - threshold;
-          const rUp = rWrist.y < rShoulder.y - threshold;
-
-          let current: ArmState = "NONE";
-          if (lUp && !rUp) current = "L_UP";
-          else if (rUp && !lUp) current = "R_UP";
+          const current = getSixSevenArmState(pts, armStateRef.current);
 
           if (current !== "NONE" && current !== armStateRef.current) {
             // count only when alternating (state change between L and R)
