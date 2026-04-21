@@ -29,17 +29,15 @@ const confidence = (point?: Landmark) =>
 
 const visibleEnough = (point?: Landmark) => Boolean(point) && confidence(point) >= 0.18;
 
-function armRaiseScore(wrist: Landmark, elbow: Landmark, shoulder: Landmark, threshold: number) {
+function armRaiseScore(wrist: Landmark, elbow: Landmark, shoulder: Landmark) {
+  // Positive when the wrist is raised. We blend three signals:
+  // - wrist above shoulder (classic "up")
+  // - wrist above elbow (forearm pointing up)
+  // - elbow above shoulder (whole arm lifted)
   const wristAboveShoulder = shoulder.y - wrist.y;
-  const elbowAboveShoulder = shoulder.y - elbow.y;
   const wristAboveElbow = elbow.y - wrist.y;
-
-  return (
-    wristAboveShoulder +
-    Math.max(0, elbowAboveShoulder) * 0.75 +
-    Math.max(0, wristAboveElbow) * 0.35 -
-    threshold
-  );
+  const elbowAboveShoulder = shoulder.y - elbow.y;
+  return wristAboveShoulder * 0.6 + wristAboveElbow * 0.8 + elbowAboveShoulder * 0.4;
 }
 
 export function getSixSevenArmState(
@@ -65,23 +63,20 @@ export function getSixSevenArmState(
   }
 
   const shoulderWidth = distance(leftShoulder, rightShoulder);
-  const adaptiveThreshold = clamp(shoulderWidth * 0.14, 0.012, 0.04);
-  const minScore = adaptiveThreshold * 0.65;
-  const separation = adaptiveThreshold * 0.35;
+  // Adaptive activation: smaller person (further away) -> smaller threshold.
+  const upThreshold = clamp(shoulderWidth * 0.05, 0.005, 0.025);
 
-  const leftScore = armRaiseScore(leftWrist, leftElbow, leftShoulder, adaptiveThreshold);
-  const rightScore = armRaiseScore(rightWrist, rightElbow, rightShoulder, adaptiveThreshold);
-  const leftUp = leftScore > minScore;
-  const rightUp = rightScore > minScore;
+  const leftScore = armRaiseScore(leftWrist, leftElbow, leftShoulder);
+  const rightScore = armRaiseScore(rightWrist, rightElbow, rightShoulder);
+  const leftUp = leftScore > upThreshold;
+  const rightUp = rightScore > upThreshold;
 
   if (leftUp && !rightUp) return "L_UP";
   if (rightUp && !leftUp) return "R_UP";
-
   if (leftUp && rightUp) {
-    if (leftScore > rightScore + separation) return "L_UP";
-    if (rightScore > leftScore + separation) return "R_UP";
-    return previous;
+    // Both up: pick the higher one, otherwise keep previous to avoid flicker.
+    if (Math.abs(leftScore - rightScore) < upThreshold * 0.4) return previous;
+    return leftScore > rightScore ? "L_UP" : "R_UP";
   }
-
   return "NONE";
 }

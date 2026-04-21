@@ -22,6 +22,8 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
   const rafRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef(-1);
   const armStateRef = useRef<ArmState>("NONE");
+  const lastCountedSideRef = useRef<ArmState>("NONE");
+  const lastCountAtRef = useRef(0);
   const repsRef = useRef(0);
   const phaseRef = useRef<Phase>("idle");
 
@@ -107,9 +109,10 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
+    const now = performance.now();
     if (video.currentTime !== lastVideoTimeRef.current) {
       lastVideoTimeRef.current = video.currentTime;
-      const result = lm.detectForVideo(video, performance.now());
+      const result = lm.detectForVideo(video, now);
 
       // Mirror draw
       ctx.save();
@@ -155,18 +158,23 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
         if (phaseRef.current === "playing") {
           const current = getSixSevenArmState(pts, armStateRef.current);
 
-          if (current !== "NONE" && current !== armStateRef.current) {
-            // count only when alternating (state change between L and R)
+          // Count as soon as a side goes UP, as long as it alternates with the
+          // previously counted side. We use the last *counted* side, not the
+          // last raw state, so a quick L→down→R still counts.
+          if (current === "L_UP" || current === "R_UP") {
+            const sinceLast = now - lastCountAtRef.current;
             if (
-              (armStateRef.current === "L_UP" && current === "R_UP") ||
-              (armStateRef.current === "R_UP" && current === "L_UP")
+              current !== lastCountedSideRef.current &&
+              sinceLast > 60 // ~16 reps/sec ceiling, prevents jitter double-counts
             ) {
               repsRef.current += 1;
               setReps(repsRef.current);
               setPopKey((k) => k + 1);
+              lastCountedSideRef.current = current;
+              lastCountAtRef.current = now;
             }
-            armStateRef.current = current;
           }
+          armStateRef.current = current;
         }
       }
     }
@@ -179,6 +187,8 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
     repsRef.current = 0;
     setReps(0);
     armStateRef.current = "NONE";
+    lastCountedSideRef.current = "NONE";
+    lastCountAtRef.current = 0;
     setCountdown(3);
     setPhaseSync("countdown");
 
