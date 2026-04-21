@@ -40,21 +40,53 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
   // Start camera + load model
   const startCamera = useCallback(async () => {
     setPhaseSync("loading");
+    let stream: MediaStream | null = null;
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: "user" },
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("BROWSER_UNSUPPORTED");
+      }
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: { ideal: "user" },
+        },
         audio: false,
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+
+      const video = videoRef.current;
+      if (!video) throw new Error("VIDEO_NOT_READY");
+
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
+
+      await new Promise<void>((resolve, reject) => {
+        const timeout = window.setTimeout(() => reject(new Error("VIDEO_LOAD_TIMEOUT")), 8000);
+        video.onloadedmetadata = () => {
+          window.clearTimeout(timeout);
+          resolve();
+        };
+      });
+      await video.play();
       await getPoseLandmarker();
       setPhaseSync("ready");
-      requestAnimationFrame(detectLoop);
+      rafRef.current = requestAnimationFrame(detectLoop);
     } catch (err) {
+      stream?.getTracks().forEach((track) => track.stop());
       console.error(err);
-      toast.error("Impossibile accedere alla webcam");
+      const name = err instanceof DOMException ? err.name : err instanceof Error ? err.message : "";
+      const message =
+        name === "NotAllowedError"
+          ? "Permesso webcam negato: abilitalo dalle impostazioni del browser."
+          : name === "NotFoundError"
+            ? "Nessuna webcam trovata."
+            : name === "NotReadableError"
+              ? "Webcam già in uso da un'altra app."
+              : "La webcam non è partita: ricarica la pagina e riprova.";
+      toast.error(message);
       setPhaseSync("idle");
     }
   }, []);
