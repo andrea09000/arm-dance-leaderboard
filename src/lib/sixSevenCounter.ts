@@ -27,7 +27,7 @@ const distance = (a: Landmark, b: Landmark) =>
 const confidence = (point?: Landmark) =>
   Math.min(point?.visibility ?? 1, point?.presence ?? 1);
 
-const visibleEnough = (point?: Landmark) => Boolean(point) && confidence(point) >= 0.18;
+const visibleEnough = (point?: Landmark) => Boolean(point) && confidence(point) >= 0.12;
 
 function armRaiseScore(wrist: Landmark, elbow: Landmark, shoulder: Landmark) {
   // Positive when the wrist is raised. We blend three signals:
@@ -65,11 +65,16 @@ export function getSixSevenArmState(
   const shoulderWidth = distance(leftShoulder, rightShoulder);
   // Adaptive activation: smaller person (further away) -> smaller threshold.
   const upThreshold = clamp(shoulderWidth * 0.05, 0.005, 0.025);
+  // Hysteresis: once "UP", allow it to stay UP with a slightly lower threshold.
+  // This reduces flicker (UP <-> NONE) at high speed.
+  const downThreshold = upThreshold * 0.6;
 
   const leftScore = armRaiseScore(leftWrist, leftElbow, leftShoulder);
   const rightScore = armRaiseScore(rightWrist, rightElbow, rightShoulder);
-  const leftUp = leftScore > upThreshold;
-  const rightUp = rightScore > upThreshold;
+  const leftUp =
+    leftScore > upThreshold || (previous === "L_UP" && leftScore > downThreshold);
+  const rightUp =
+    rightScore > upThreshold || (previous === "R_UP" && rightScore > downThreshold);
 
   if (leftUp && !rightUp) return "L_UP";
   if (rightUp && !leftUp) return "R_UP";

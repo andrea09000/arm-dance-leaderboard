@@ -314,7 +314,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
             const sinceLast = now - lastCountAtRef.current;
             if (
               current !== lastCountedSideRef.current &&
-              sinceLast > 60 // ~16 reps/sec ceiling, prevents jitter double-counts
+              sinceLast > 40 // ~25 reps/sec ceiling, prevents jitter double-counts
             ) {
               repsRef.current += 1;
               setReps(repsRef.current);
@@ -464,7 +464,7 @@ export function SpeedGame({ onScoreSaved }: SpeedGameProps) {
         )}
 
         {phase === "done" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/95 p-6 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto bg-background/95 p-6 text-center">
             <Trophy className="h-16 w-16 text-primary" />
             <p className="text-sm uppercase tracking-widest text-muted-foreground">Hai fatto</p>
             <p className="text-7xl font-black text-gradient-hero">{reps}</p>
