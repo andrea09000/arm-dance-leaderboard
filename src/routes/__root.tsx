@@ -29,18 +29,24 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Track your Six Seven speed with real-time arm tracking and leaderboards." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Track your Six Seven speed with real-time arm tracking and leaderboards." },
+      { title: "67 Speed — SixSeven Arm Speed Challenge" },
+      {
+        name: "description",
+        content:
+          "Sfida la tua velocità SixSeven: la webcam conta i cambi di braccia in 30 secondi. Classifica online, gratis, senza app.",
+      },
+      { property: "og:title", content: "67 Speed — SixSeven Arm Speed Challenge" },
+      {
+        property: "og:description",
+        content: "Quanti cambi di braccia in 30 secondi? Sfida la classifica.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Track your Six Seven speed with real-time arm tracking and leaderboards." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31ced882-7ed5-47d0-8d75-4217d6a62694/id-preview-6185e1bb--a9fc4a92-27fd-44a3-aab8-0399248ffc57.lovable.app-1776780045461.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31ced882-7ed5-47d0-8d75-4217d6a62694/id-preview-6185e1bb--a9fc4a92-27fd-44a3-aab8-0399248ffc57.lovable.app-1776780045461.png" },
+      { name: "twitter:title", content: "67 Speed — SixSeven Arm Speed Challenge" },
+      {
+        name: "twitter:description",
+        content: "Quanti cambi di braccia in 30 secondi? Sfida la classifica.",
+      },
     ],
     links: [
       {
@@ -56,7 +62,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="it">
       <head>
         <HeadContent />
       </head>

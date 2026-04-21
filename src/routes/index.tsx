@@ -27,19 +27,16 @@ function Index() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
-    <main className="min-h-screen px-4 py-8 sm:py-12">
+    <main className="min-h-screen px-4 py-6 sm:py-12">
       <Toaster position="top-center" theme="dark" />
 
       <header className="mx-auto mb-8 max-w-5xl text-center">
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.4em] text-accent">
-          67speed.com
-        </p>
-        <h1 className="text-5xl font-black leading-none sm:text-7xl">
+        <h1 className="text-[clamp(2.75rem,10vw,4.5rem)] font-black leading-none">
           <span className="text-gradient-hero">SIX</span>
           <span className="text-foreground">·</span>
           <span className="text-gradient-hero">SEVEN</span>
         </h1>
-        <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+        <p className="mt-3 text-pretty text-base text-muted-foreground sm:text-lg">
           Alterna le braccia il più velocemente possibile. La webcam fa il resto.
         </p>
       </header>
@@ -50,7 +47,7 @@ function Index() {
       </div>
 
       <footer className="mx-auto mt-12 max-w-5xl text-center text-xs text-muted-foreground">
-        Tracking pose con MediaPipe · Classifica salvata su Lovable Cloud
+        Tracking pose con MediaPipe · Classifica online
       </footer>
     </main>
   );
